@@ -54,7 +54,7 @@ def mutation(genome:Genome) -> Genome:
 
 #Main Function
 def runEvolution():
-    population = generatPopulation(8)
+    population = generatPopulation(50)
     
     for i in range(GENERATION_LIMIT):
         #Selects the best genomes
