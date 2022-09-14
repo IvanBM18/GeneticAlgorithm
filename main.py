@@ -1,8 +1,7 @@
-from random import choices, randint
+from random import choices, randint, random
 from typing import List, Tuple
 
 GENOME_LENGTH = 7
-GENERATION_LIMIT = 100
 #Genetic Representation of a solution
 Genome = List[int] #Ex: [0000000,1010101], where 0000000 is 5.04 and 1111111 is 5.12
 Population = List[Genome]
@@ -49,24 +48,41 @@ def mutation(genome:Genome) -> Genome:
     #Selects a random index to mutate
     mutationIndex = randint(0,GENOME_LENGTH-1)
     #Mutates the genome
-    genome[mutationIndex] = genome[mutationIndex] if genome[mutationIndex] == 0 else abs(genome[mutationIndex]-1)
+    genome[mutationIndex] = genome[mutationIndex] if random() > 0.5 else abs(genome[mutationIndex]-1)
     return genome
 
 #Main Function
-def runEvolution():
+def runEvolution(generationLimit : int):
     population = generatPopulation(50)
     
-    for i in range(GENERATION_LIMIT):
+    for i in range(generationLimit):
+        population = sorted(population, key= lambda genome: fitness(genome ), reverse=True)
+        #Gets the minimum fitness
+        if(fitness(population[0]) == 0):
+            print(f"Generation {i} x = {genomeToDecimal(population[0])}, f(x) = {fitness(population[0])}")
+            break
+        #Gets the maximum fitness
+        if(fitness(population[0]) >= 5.12**2):
+            print(f"Generation {i} x = {genomeToDecimal(population[0])}, f(x) = {fitness(population[0])}")
+            break
         #Selects the best genomes
-        best = selectBest(population)
-        #Crosses over the genomes
-        child1,child2 = singlePointCrossOver(best[0],best[1])
-        #Mutates the genomes
-        child1 = mutation(child1)
-        child2 = mutation(child2)
-        #Replaces the worst genomes with the new ones
-        population = population[:-2] + [child1,child2]
-        #Prints the best genome of the current generation
-        print(f"Generation {i} Best: {genomeToDecimal(selectBest(population)[0])}")
+        nextGeneration = population[0:2]
+        #Creates the next generation
+        for j in range(int(len(population) / 2) -1):
+            parents = selectBest(population)
+            son1, son2 = singlePointCrossOver(parents[0],parents[1])
+            
+            #Apply Mutation to the sons
+            son1 = mutation(son1)
+            son2 = mutation(son2)
+            
+            nextGeneration += [son1,son2]
+        #Replaces the old genomes with the new ones
+        population = nextGeneration
         
-runEvolution()
+    population = sorted(population, key= lambda genome: fitness(genome), reverse=True)
+    return population[0]
+        
+generations = int(input("Ingrese el numero máximo de Generación: "))
+bestSolution = runEvolution(generations)
+# print(f"Best Solution: {genomeToDecimal(bestSolution)} eval: {fitness(bestSolution)}")
